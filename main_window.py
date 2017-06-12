@@ -1,8 +1,9 @@
-from PyQt4.QtGui import QMainWindow, QAction, QToolBar, QIcon, QFileDialog, QMessageBox
+from PyQt4.QtGui import QMainWindow, QAction, QToolBar, QIcon, QFileDialog, QDialog, QVBoxLayout, QLayout, QDialogButtonBox
 from PyQt4.QtCore import Qt
+from PyQt4 import QtCore
 from status_bar import StatusBar
 from editor import Editor
-
+#*********************************NO FUNCA*******************************************
 class MainWindow(QMainWindow):
     """
     Esta es la ventana principal de la App
@@ -10,16 +11,16 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setWindowTitle(self.tr("Alum Code Editor"))
-        self.setWindowIcon(QIcon("alum_logo.png"))
         self.setMinimumSize(750,500)
+        self._want_to_close = False
 
         #Barra de Menu TOP
         menu = self.menuBar()
         self.__crear_acciones()
         self.__crear_menu(menu)
-
         #Widget Cetral
         self.editor = Editor()
+
         self.setCentralWidget(self.editor)
         self.editor.setStyleSheet("background-color:#1e1e1e;color:white;font-size:18px;border-color:black;")
         self.editor.cursorPositionChanged.connect(self._actualizar_status_bar)
@@ -84,7 +85,7 @@ class MainWindow(QMainWindow):
         #Menu About
         self.about = QAction("About", self)
         self.github = QAction("GitHub", self)
-
+        self.connect(self.about,QtCore.SIGNAL("triggered()"),self._about)
 
     def __crear_menu(self, menu_bar):
         menu_archivo = menu_bar.addMenu("&Archivo")
@@ -119,6 +120,10 @@ class MainWindow(QMainWindow):
         toolbar.addAction(self.copiar)
         toolbar.addAction(self.pegar)
 
+    def _about(self):
+        import contact_us as US
+        ventana=US.About_us().exec_()
+
     def _abrir_archivo(self):
         nombre = QFileDialog.getOpenFileName(self, self.tr("Abrir archivo"))
 
@@ -146,24 +151,15 @@ class MainWindow(QMainWindow):
 
     def _nuevo_archivo(self):
         #ESTE METODO ME ESTA TIRANDO ERROR
-        if self.editor.modificado:
-            SI = QMessageBox.Yes
-            NO = not QMessageBox
-            CANCELAR = QMessageBox.Cancel
-            respuesta = QMessageBox.question(self, self.tr("Modificado!"),
-                                             self.tr("El archivo %s fue modificado/n"
-                                                     "Quardar?") % self.editor.nombre,
-                                             SI | NO | CANCELAR)
-            if respuesta == CANCELAR:
-                return
-            elif respuesta == SI:
-                self._abrir_archivo()
-            else:
-                self.editor.setPlainText("")
-                self.editor.modificado = False
+        #Ya no creo xD?
+        self.filename = QFileDialog.getSaveFileName()
+        if(self.filename == ""):
+            pass
         else:
-            self.editor.setPlainText("")
-            self.editor.modificado = False
+            file = open(self.filename,"w")
+            codigo = self.editor.toPlainText()
+            file.write(codigo)
+            file.close()
 
     def _modificado(self, valor):
         if valor:
@@ -177,22 +173,30 @@ class MainWindow(QMainWindow):
         self.status.actualizar_label(linea, columna)
 
     def closeEvent(self, evento):
-        if self.editor.modificado:
-            flags = QMessageBox.Yes
-            flags |= QMessageBox.No
-            flags |= QMessageBox.Cancel
-            r = QMessageBox.information(self, self.tr("Modificado!"),
-                                    self.tr("Cerrar la aplicacion sin guardar?"),
-                                    flags
+        dialog = Dialog(self)
+        dialog.setWindowTitle("Mi Aplicacion")
+        dialog.setLabel("Deseas Salir")
+        dialog.show()
+        resultado = dialog.exec_()
 
-                                    )
-            if r == QMessageBox.Yes:
-                self._guardar_archivo()
-            elif r == QMessageBox.No:
-                evento.accept()
-            else:
-                evento.ignore()
+        if resultado:
+            evento.accept()
+        else:
+            evento.ignore()
 
+class Dialog(QDialog):
 
+    def __init__(self, parent):
+        super(QDialog, self).__init__(parent = None)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setAligment(Qt.AlignHCenter)
+        self.setMinimumSize(500,100)
+        self.layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        amount = 40
+        self.layout.setContentsMargins(amount, amount, amount, amount)
+        self.buttons = QDialogButtonBox(
+            QDialogButtonBox.OK | QDialogButtonBox.Cancel,
+            Qt.Horizontal, self)
 
 
