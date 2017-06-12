@@ -10,4 +10,3 @@ class Editor(QPlainTextEdit):
         self.nombre = "Nuevo_archivo"
         self.modificado = False
 
-g

@@ -10,6 +10,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setWindowTitle(self.tr("Alum Code Editor"))
+        self.setWindowIcon(QIcon("alum_logo.png"))
         self.setMinimumSize(750,500)
 
         #Barra de Menu TOP
