@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QMainWindow, QAction, QToolBar, QIcon, QFileDialog, QDialog, QVBoxLayout, QLayout, QDialogButtonBox
+from PyQt4.QtGui import QMainWindow, QAction, QToolBar, QIcon, QFileDialog, QMessageBox, QVBoxLayout, QLayout, QDialogButtonBox
 from PyQt4.QtCore import Qt
 from PyQt4 import QtCore
 from status_bar import StatusBar
@@ -175,28 +175,18 @@ class MainWindow(QMainWindow):
     def closeEvent(self, evento):
         dialog = Dialog(self)
         dialog.setWindowTitle("Mi Aplicacion")
-        dialog.setLabel("Deseas Salir")
+        dialog.setText("¿Deseas salir sin guardar?")
         dialog.show()
         resultado = dialog.exec_()
-
-        if resultado:
+        print(resultado)
+        if resultado == QMessageBox.Ok:
             evento.accept()
         else:
             evento.ignore()
 
-class Dialog(QDialog):
+class Dialog(QMessageBox):
 
     def __init__(self, parent):
-        super(QDialog, self).__init__(parent = None)
-
-        self.layout = QVBoxLayout(self)
-        self.layout.setAligment(Qt.AlignHCenter)
-        self.setMinimumSize(500,100)
-        self.layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
-        amount = 40
-        self.layout.setContentsMargins(amount, amount, amount, amount)
-        self.buttons = QDialogButtonBox(
-            QDialogButtonBox.OK | QDialogButtonBox.Cancel,
-            Qt.Horizontal, self)
-
-
+        super(QMessageBox, self).__init__(parent = None)
+        self.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        self.buttonClicked.connect(lambda:print("clicked!"))
