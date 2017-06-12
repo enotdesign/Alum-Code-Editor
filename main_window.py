@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QMainWindow, QAction, QToolBar, QIcon, QFileDialog
+from PyQt4.QtGui import QMainWindow, QAction, QToolBar, QIcon, QFileDialog, QMessageBox
 from PyQt4.QtCore import Qt
 from status_bar import StatusBar
 from editor import Editor
@@ -21,6 +21,7 @@ class MainWindow(QMainWindow):
         self.editor = Editor()
         self.setCentralWidget(self.editor)
         self.editor.setStyleSheet("background-color:#1e1e1e;color:white;font-size:18px;border-color:black;")
+        self.editor.cursorPositionChanged.connect(self._actualizar_status_bar)
         #ToolBar
         self.toolbar = QToolBar()
         self.__crear_Toolbar(self.toolbar)
@@ -34,6 +35,7 @@ class MainWindow(QMainWindow):
         #Conexiones
         self.abrir.triggered.connect(self._abrir_archivo)
         self.guardar.triggered.connect(self._guardar_archivo)
+        self.nuevo.triggered.connect(self._nuevo_archivo)
 
     def __crear_acciones(self):
         #Menu Archivo
@@ -131,7 +133,7 @@ class MainWindow(QMainWindow):
             self._guardar_como()
         else:
             contenido = self.editor.toPlainText()
-            with open(self.editor.nombre, 'a') as archivo:
+            with open(self.editor.nombre, 'w') as archivo:
                 archivo.write(contenido)
 
     def _guardar_como(self):
@@ -140,4 +142,56 @@ class MainWindow(QMainWindow):
             contenido = self.editor.toPlainText()
             with open(nombre, 'w') as archivo:
                 archivo.write(contenido)
+
+    def _nuevo_archivo(self):
+        #ESTE METODO ME ESTA TIRANDO ERROR
+        if self.editor.modificado:
+            SI = QMessageBox.Yes
+            NO = not QMessageBox
+            CANCELAR = QMessageBox.Cancel
+            respuesta = QMessageBox.question(self, self.tr("Modificado!"),
+                                             self.tr("El archivo %s fue modificado/n"
+                                                     "Quardar?") % self.editor.nombre,
+                                             SI | NO | CANCELAR)
+            if respuesta == CANCELAR:
+                return
+            elif respuesta == SI:
+                self._abrir_archivo()
+            else:
+                self.editor.setPlainText("")
+                self.editor.modificado = False
+        else:
+            self.editor.setPlainText("")
+            self.editor.modificado = False
+
+    def _modificado(self, valor):
+        if valor:
+            self.editor.modificado = True
+        else:
+            self.editor.modificao = False
+
+    def _actualizar_status_bar(self):
+        linea = self.editor.textCursor().blockNumber() + 1
+        columna = self.editor.textCursor().columnNumber()
+        self.status.actualizar_label(linea, columna)
+
+    def closeEvent(self, evento):
+        if self.editor.modificado:
+            flags = QMessageBox.Yes
+            flags |= QMessageBox.No
+            flags |= QMessageBox.Cancel
+            r = QMessageBox.information(self, self.tr("Modificado!"),
+                                    self.tr("Cerrar la aplicacion sin guardar?"),
+                                    flags
+
+                                    )
+            if r == QMessageBox.Yes:
+                self._guardar_archivo()
+            elif r == QMessageBox.No:
+                evento.accept()
+            else:
+                evento.ignore()
+
+
+
 

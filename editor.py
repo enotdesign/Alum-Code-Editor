@@ -8,4 +8,6 @@ class Editor(QPlainTextEdit):
         super(Editor,self).__init__()
         self.es_nuevo = True
         self.nombre = "Nuevo_archivo"
+        self.modificado = False
 
+g
