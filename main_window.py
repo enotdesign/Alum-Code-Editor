@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
         self.editor = Editor()
 
         self.setCentralWidget(self.editor)
-        self.editor.setStyleSheet("background-color:#1e1e1e;color:white;font-size:18px;border-color:black;")
+        self.editor.setStyleSheet("background-color:#1e1e1e;color:white;font-size:18px;border:none;")
         self.editor.cursorPositionChanged.connect(self._actualizar_status_bar)
         #ToolBar
         self.toolbar = QToolBar()
